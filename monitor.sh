@@ -154,6 +154,23 @@ function wait_for_minimum_period {
 
 #-----------------------------------------------------------------------------------------------------------------------
 
+function wait_for_command_to_complete {
+  PID=$1
+
+  while ps -p $PID > /dev/null
+  do
+    sleep .1
+
+    if [[ "$IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING" == "1" ]]
+    then
+      # -t 0 didn't work for me. Seemed to return success with no RECORD
+      while read -t 0.001 RECORD; do :; done
+    fi
+  done
+}
+
+#-----------------------------------------------------------------------------------------------------------------------
+
 echo "$(ts) Starting monitor for $CONFIG_FILE"
 
 tr -d '\r' < $CONFIG_FILE > /tmp/$NAME.conf
@@ -193,7 +210,10 @@ do
     wait_for_minimum_period $last_run_time
 
     echo "$(ts) Running command"
-    $COMMAND
+    $COMMAND &
+    PID=$!
     last_run_time=$(date +"%s")
+
+    wait_for_command_to_complete $PID
   fi
 done <$pipe
