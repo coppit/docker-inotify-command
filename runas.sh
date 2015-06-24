@@ -12,13 +12,10 @@ function ts {
 #-----------------------------------------------------------------------------------------------------------------------
 
 function process_args {
-  # Shift off the args as we go so that we can exec $@ later. These are meant to be globals.
+  # These are meant to be globals.
   UMAP=$1
-  shift
-  GMAP=$1
-  shift
-  UGID=$1
-  shift
+  GMAP=$2
+  UGID=$3
 
   for NAME_UID_GID in $UMAP
   do
@@ -40,7 +37,7 @@ function process_args {
 
   if [[ ! "$UGID" =~ ^[0-9]{1,}:[0-9]{1,}$ ]]
   then
-    echo "UGID value is not valid. It should be of the form <uid>:<gid>"
+    echo "UGID value $UGID is not valid. It should be of the form <uid>:<gid>"
     exit 1
   fi
 }
@@ -103,7 +100,10 @@ function create_user {
 
 #-----------------------------------------------------------------------------------------------------------------------
 
-process_args
+process_args "$@"
+
+# Shift off the args so that we can exec $@ below
+shift; shift; shift
 
 update_users "$UMAP"
 update_groups "$GMAP"
