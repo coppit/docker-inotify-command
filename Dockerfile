@@ -15,8 +15,8 @@ RUN set -x \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 VOLUME ["/config", \
-  "/watch1", "/watch2", "/watch3", "/watch4", "/watch5", "/watch6", "/watch7", "/watch8", "/watch9", "/watch10", \
-  "/watch11", "/watch12", "/watch13", "/watch14", "/watch15", "/watch16", "/watch17", "/watch18", "/watch19", "/watch20"]
+  "/dir1", "/dir2", "/dir3", "/dir4", "/dir5", "/dir6", "/dir7", "/dir8", "/dir9", "/dir10", \
+  "/dir11", "/dir12", "/dir13", "/dir14", "/dir15", "/dir16", "/dir17", "/dir18", "/dir19", "/dir20"]
 
 # Add default config file
 ADD sample.conf /root/sample.conf
