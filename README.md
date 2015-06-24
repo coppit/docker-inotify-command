@@ -39,9 +39,9 @@ Controlling File Ownership
 If your command writes to the directory, you may want to use the `UMAP` and `GMAP` environment variables to update user
 IDs and group IDs inside the container so that they match those of the host. For example, if your command is `chown -R
 nobody:users /dir1`, then you'll want to make sure that the "nobody" user in the container has the same ID as in the
-host. You can set the UMAP environment variable to the value specified by ``echo nobody:`id -u nobody`:`id -g nobody`
-``. Similarly, to remap the primary group for the "nobody" user, you would set GMAP to the value specified by ``echo `id
--gn nobody`:`id -g nobody` ``.
+host. You can set the UMAP environment variable to the value specified by
+``echo nobody:`id -u nobody`:`id -g nobody` ``. Similarly, to remap the primary group for the "nobody" user, you would set
+GMAP to the value specified by ``echo `id -gn nobody`:`id -g nobody` ``.
 
 You can specify multiple users or groups to update by separating them with spaces in the UMAP and GMAP variables. For
 example, these -e arguments to the `docker run` command will update the "nobody" and "www" users, as well as the "users"
