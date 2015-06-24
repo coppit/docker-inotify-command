@@ -1,3 +1,3 @@
 #!/usr/bin/bash
 
-docker build --rm=true -t coppit/sagetv-rescan . 
+docker build --rm=true -t coppit/inotify-command . 
