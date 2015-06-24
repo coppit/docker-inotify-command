@@ -24,5 +24,7 @@ ADD sample.conf /root/sample.conf
 # Add scripts
 ADD start.sh /root/start.sh
 RUN chmod +x /root/start.sh
+ADD monitor.sh /root/monitor.sh
+RUN chmod +x /root/monitor.sh
 
 CMD /root/start.sh
