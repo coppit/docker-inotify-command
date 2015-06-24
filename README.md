@@ -1,5 +1,3 @@
-# docker-inotify-command
-
 docker-inotify-command
 ======================
 
@@ -13,7 +11,7 @@ This docker image is available as a [trusted build on the docker index](https://
 
 Run:
 
-`sudo docker run --name=inotify-command -d -v /etc/localtime:/etc/localtime -v /config/dir/path:/config:rw -v /media/dir/path:/dir1 coppit/inotify-command`
+`sudo docker run --name=inotify-command -d -v /etc/localtime:/etc/localtime -v /config/dir/path:/config:rw -v /dir/path:/dir1 coppit/inotify-command`
 
 To check the status, run:
 
@@ -34,3 +32,26 @@ the host. Up to 20 directories can be monitored. If your commands need to write 
 them to be used that way as well.
 
 After creating your conf files, restart the container and it will begin monitoring.
+
+Examples
+--------
+
+### Run a permissions-repairing utility whenever there's a change in the directory
+
+ WATCH_DIR=/dir2
+ SETTLE_DURATION=5
+ MAX_WAIT_TIME=30
+ MIN_PERIOD=30
+ COMMAND="/root/newperms /dir2"
+ # This is important because chmod/chown will change files in the monitored directory
+ IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING=1
+
+### Tell SageTV to rescan its imported media when the media directory changes
+
+ WATCH_DIR=/dir1
+ SETTLE_DURATION=5
+ MAX_WAIT_TIME=05:00
+ MIN_PERIOD=10:00
+ COMMAND="wget -nv -O /dev/null --auth-no-challenge http://sage:frey@192.168.1.102:8080/sagex/api?c=RunLibraryImportScan&1="
+ # This is not important because the above is a "fire and forget" asynchronous operation
+ IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING=0
