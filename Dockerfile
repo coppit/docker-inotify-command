@@ -18,13 +18,24 @@ VOLUME ["/config", \
   "/dir1", "/dir2", "/dir3", "/dir4", "/dir5", "/dir6", "/dir7", "/dir8", "/dir9", "/dir10", \
   "/dir11", "/dir12", "/dir13", "/dir14", "/dir15", "/dir16", "/dir17", "/dir18", "/dir19", "/dir20"]
 
-# Add default config file
-ADD sample.conf /root/sample.conf
+ENV UGIDS 0:0
+ENV UMAP ""
+ENV GMAP ""
 
-# Add scripts
-ADD start.sh /root/start.sh
-RUN chmod +x /root/start.sh
-ADD monitor.sh /root/monitor.sh
-RUN chmod +x /root/monitor.sh
+# Create dir to keep things tidy. Make sure it's readable by $UID
+RUN mkdir /files
+RUN chmod a+rwX /files
 
-CMD /root/start.sh
+# Add default config file. Make sure it's readable by $UID
+ADD sample.conf /files/sample.conf
+RUN chmod a+r /files/sample.conf
+
+# Add scripts. Make sure start.sh and monitor.sh are executable by $UID
+ADD start.sh /files/start.sh
+RUN chmod a+x /files/start.sh
+ADD monitor.sh /files/monitor.sh
+RUN chmod a+x /files/monitor.sh
+ADD runas.sh /files/runas.sh
+RUN chmod +x /files/runas.sh
+
+CMD /files/runas.sh "$UMAP" "$GMAP" "$UGIDS" /files/start.sh

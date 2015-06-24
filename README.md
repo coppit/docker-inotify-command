@@ -33,10 +33,34 @@ them to be used that way as well.
 
 After creating your conf files, restart the container and it will begin monitoring.
 
+Controlling File Ownership
+--------------------------
+
+If your command writes to the directory, you may want to use the `UMAP` and `GMAP` environment variables to update user
+IDs and group IDs inside the container so that they match those of the host. For example, if your command is `chown -R
+nobody:users /dir1`, then you'll want to make sure that the "nobody" user in the container has the same ID as in the
+host. You can set the UMAP environment variable to the value specified by ``echo nobody:`id -u nobody`:`id -g nobody`
+``. Similarly, to remap the primary group for the "nobody" user, you would set GMAP to the value specified by ``echo `id
+-gn nobody`:`id -g nobody` ``.
+
+You can specify multiple users or groups to update by separating them with spaces in the UMAP and GMAP variables. For
+example, these -e arguments to the `docker run` command will update the "nobody" and "www" users, as well as the "users"
+and "wheel" groups:
+
+`-e UMAP="nobody:99:100 www:80:800" -e GMAP="users:100 wheel:800"`
+
+For commands that create files without an explicit user or group name, you may want to set the `UGID` environment
+variable so that files created by the command will have the correct user and group IDs in the host. For example, if your
+command is `echo foo > /dir1/foo.txt`, then by default the file will be created as the "root" user of the container. If
+you want it to be created as user "nobody" with its default group, you would set `UGID` to the values specified by
+``echo `id -u nobody`:`id -g nobody` `` in the host. For instance:
+
+`-e UGID=99:100`
+
 Examples
 --------
 
-Run a permissions-repairing utility whenever there's a change in the directory:
+This example is to run a permissions-repairing utility whenever there's a change in the directory:
 
     WATCH_DIR=/dir2
     SETTLE_DURATION=5
@@ -46,12 +70,20 @@ Run a permissions-repairing utility whenever there's a change in the directory:
     # This is important because chmod/chown will change files in the monitored directory
     IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING=1
 
-Tell SageTV to rescan its imported media when the media directory changes:
+Since the `newperms` utility does an explicit "chown -R nobody:users", we need to use the UMAP and GMAP environment
+variables to update the user and group in the container so that it will match the host. For example:
+
+`docker run -e UMAP=nobody:99:100 -e GMAP=users:100 --name=inotify-command -d -v /etc/localtime:/etc/localtime -v
+/config/dir/path:/config:rw -v /dir/path:/dir2:rw -v /usr/local/sbin/newperms:/newperms coppit/inotify-command`
+
+This example tells SageTV to rescan its imported media when the media directory changes:
 
     WATCH_DIR=/dir1
     SETTLE_DURATION=5
     MAX_WAIT_TIME=05:00
     MIN_PERIOD=10:00
     COMMAND="wget -nv -O /dev/null --auth-no-challenge http://sage:frey@192.168.1.102:8080/sagex/api?c=RunLibraryImportScan&1="
-    # This is not important because the above is a "fire and forget" asynchronous operation
     IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING=0
+
+We don't need to ignore events while the command is running because the wget command is a "fire and forget" asynchronous
+operation. We also don't need to use UMAP, GMAP, or UGID since this command doesn't write to any watch directory.

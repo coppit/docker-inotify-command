@@ -17,7 +17,7 @@ readarray -t CONFIG_FILES < <(ls /config/*.conf)
 if [[ "$CONFIG_FILES" == "" ]]
 then
   echo "$(ts) Creating sample config file. Rename it, check the settings, then rerun the container. Exiting."
-  cp /root/sample.conf /config/sample.conf
+  cp /files/sample.conf /config/sample.conf
   chmod a+w /config/sample.conf
   exit 1
 fi
@@ -27,7 +27,7 @@ PIDS=()
 for CONFIG_FILE in "${CONFIG_FILES[@]}" 
 do 
   echo "$(ts) Launching monitor for $CONFIG_FILE"
-  /root/monitor.sh $CONFIG_FILE &
+  /files/monitor.sh $CONFIG_FILE &
   PIDS+=($!)
 done
 

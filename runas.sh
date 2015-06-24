@@ -11,6 +11,42 @@ function ts {
 
 #-----------------------------------------------------------------------------------------------------------------------
 
+function process_args {
+  # Shift off the args as we go so that we can exec $@ later. These are meant to be globals.
+  UMAP=$1
+  shift
+  GMAP=$1
+  shift
+  UGID=$1
+  shift
+
+  for NAME_UID_GID in $UMAP
+  do
+    if [[ ! "$NAME_UID_GID" =~ ^[A-Za-z0-9._][-A-Za-z0-9._]*:[0-9]{1,}:[0-9]{1,}$ ]]
+    then
+      echo "UMAP value $NAME_UID_GID is not valid. It should be of the form <user name>:<uid>:<gid>"
+      exit 1
+    fi
+  done
+
+  for NAME_GID in $GMAP
+  do
+    if [[ ! "$NAME_GID" =~ ^[A-Za-z0-9._][-A-Za-z0-9._]*:[0-9]{1,}$ ]]
+    then
+      echo "GMAP value $NAME_GID is not valid. It should be of the form <group name>:<gid>"
+      exit 1
+    fi
+  done
+
+  if [[ ! "$UGID" =~ ^[0-9]{1,}:[0-9]{1,}$ ]]
+  then
+    echo "UGID value is not valid. It should be of the form <uid>:<gid>"
+    exit 1
+  fi
+}
+
+#-----------------------------------------------------------------------------------------------------------------------
+
 function update_users {
   local UMAP=$1
 
@@ -52,11 +88,11 @@ function update_groups {
 #-----------------------------------------------------------------------------------------------------------------------
 
 function create_user {
-  local UID_GID=$1
+  local UGID=$1
 
   # Create a new user with the proper user and group ID.
-  local USER_ID=${UID_GID%:*}
-  local GROUP_ID=${UID_GID#*:}
+  local USER_ID=${UGID%:*}
+  local GROUP_ID=${UGID#*:}
 
   echo "$(ts) Creating user \"$USER\" (ID $USER_ID) and group \"$GROUP\" (ID $GROUP_ID) to run the command..."
 
@@ -67,17 +103,11 @@ function create_user {
 
 #-----------------------------------------------------------------------------------------------------------------------
 
-# Shift off the args as we go so that we can exec $@
-UMAP=$1
-shift
-GMAP=$1
-shift
-UID_GID=$1
-shift
+process_args
 
 update_users "$UMAP"
 update_groups "$GMAP"
-create_user "$UID_GID"
+create_user "$UGID"
 
 echo "$(ts) Running command as user \"$USER\"..."
 exec /sbin/setuser $USER "$@"
