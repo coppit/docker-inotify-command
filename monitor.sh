@@ -15,9 +15,6 @@ function is_change_event {
   EVENT="$1"
   FILE="$2"
 
-#  echo "EVENT=$EVENT"
-#  echo "FILE=$FILE"
-
   # File events
   if [ "$EVENT" == "ATTRIB" ]
   then
@@ -187,7 +184,7 @@ pipe=$(mktemp -u)
 mkfifo $pipe
 
 echo "$(ts) Waiting for changes to $WATCH_DIR..."
-inotifywait -m -q --format '%e %f' $WATCH_DIR >$pipe &
+inotifywait -r -m -q --format '%e %f' $WATCH_DIR >$pipe &
 
 last_run_time=0
 
@@ -197,6 +194,9 @@ do
   then
     EVENT=$(echo "$RECORD" | cut -d' ' -f 1)
     FILE=$(echo "$RECORD" | cut -d' ' -f 2-)
+
+  echo "EVENT=$EVENT"
+  echo "FILE=$FILE"
 
     if ! is_change_event "$EVENT" "$FILE"
     then
