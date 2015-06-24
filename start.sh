@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function ts {
-  echo [`date '+%b %d %X' MASTER:`]
+  echo [`date '+%b %d %X'`] MASTER:
 }
 
 echo "$(ts) Starting master controller"
@@ -24,7 +24,7 @@ fi
 
 PIDS=()
 
-for $CONFIG_FILE in "${CONFIG_FILES[@]}" 
+for CONFIG_FILE in "${CONFIG_FILES[@]}" 
 do 
   echo "$(ts) Launching monitor for $CONFIG_FILE"
   /root/monitor.sh $CONFIG_FILE &
@@ -45,7 +45,7 @@ do
 
     echo "$(ts) Monitor for ${CONFIG_FILES[$i]} has died (PID ${PIDS[$i]}). Killing other monitors and exiting."
 
-    for $PID in "${PIDS[@]}" 
+    for PID in "${PIDS[@]}" 
     do 
       kill -9 $PID >/dev/null 2>&1
     done
