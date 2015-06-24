@@ -195,8 +195,8 @@ do
     EVENT=$(echo "$RECORD" | cut -d' ' -f 1)
     FILE=$(echo "$RECORD" | cut -d' ' -f 2-)
 
-  echo "EVENT=$EVENT"
-  echo "FILE=$FILE"
+#  echo "EVENT=$EVENT"
+#  echo "FILE=$FILE"
 
     if ! is_change_event "$EVENT" "$FILE"
     then
