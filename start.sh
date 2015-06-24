@@ -1,108 +1,57 @@
 #!/bin/bash
 
 function ts {
-  echo [`date '+%b %d %X'`]
+  echo [`date '+%b %d %X' MASTER:`]
 }
 
-echo "$(ts) Starting SageTV-Rescan container"
+echo "$(ts) Starting master controller"
 
-# Search for custom config file, if it doesn't exist, copy the default one
-if [ ! -f /config/sagetv-rescan.conf ]; then
-  echo "$(ts) Creating config file and exiting. Check the settings, then rerun the container."
-  cp /root/sagetv-rescan.conf /config/sagetv-rescan.conf
-  chmod a+w /config/sagetv-rescan.conf
+if [ -f /config/sample.conf ]; then
+  echo "$(ts) /config/sample.conf exists. Rename it, check the settings, then rerun the container. Exiting."
   exit 1
 fi
 
-tr -d '\r' < /config/sagetv-rescan.conf > /tmp/sagetv-rescan.conf
+readarray -t CONFIG_FILES < <(ls /config/*.conf)
 
-. /tmp/sagetv-rescan.conf
-
-if [[ ! "$SETTLE_DURATION" =~ ^([0-9]{1,2}:){0,2}[0-9]{1,2}$ ]]; then
-  echo "$(ts) SETTLE_DURATION must be defined in sagetv-rescan.conf as HH:MM:SS or MM:SS or SS."
+# If there is no config file copy the default one
+if [[ "$CONFIG_FILES" == "" ]]
+then
+  echo "$(ts) Creating sample config file. Rename it, check the settings, then rerun the container. Exiting."
+  cp /root/sample.conf /config/sample.conf
+  chmod a+w /config/sample.conf
   exit 1
 fi
 
-if [[ ! "$MAX_WAIT_TIME" =~ ^([0-9]{1,2}:){0,2}[0-9]{1,2}$ ]]; then
-  echo "$(ts) MAX_WAIT_TIME must be defined in sagetv-rescan.conf as HH:MM:SS or MM:SS or SS."
-  exit 1
-fi
+PIDS=()
 
-if [ -z "$NOTIFY_COMMAND" ]; then
-  echo "$(ts) NOTIFY_COMMAND must be defined in sagetv-rescan.conf"
-  exit 1
-elif [ "$NOTIFY_COMMAND" = "YOUR_SERVER" ]; then
-  echo "$(ts) Please replace \"YOUR_SERVER\" in sagetv-rescan.conf"
-  exit 1
-fi
+for $CONFIG_FILE in "${CONFIG_FILES[@]}" 
+do 
+  echo "$(ts) Launching monitor for $CONFIG_FILE"
+  /root/monitor.sh $CONFIG_FILE &
+  PIDS+=($!)
+done
 
-to_seconds () {
-  readarray elements < <(echo $1 | sed 's/:/\n/g' | tac)
-
-  SECONDS=0
-  POWER=1
-
-  for (( i=0 ; i<${#elements[@]}; i++ )) ; do
-    SECONDS=$(( 10#$SECONDS + 10#${elements[i]} * 10#$POWER ))
-    POWER=$(( 10#$POWER * 60 ))
-  done
-
-  echo "$SECONDS"
-}
-
-SETTLE_DURATION=$(to_seconds $SETTLE_DURATION)
-MAX_WAIT_TIME=$(to_seconds $MAX_WAIT_TIME)
-
-pipe=$(mktemp -u)
-mkfifo $pipe
-
-echo "$(ts) Waiting for changes..."
-inotifywait -m -q --format '%e %f' /media >$pipe &
+# Sleep for a second to allow the monitors to check their config files
+sleep 1
 
 while true
 do
-  if read RECORD
-  then
-    EVENT=$(echo "$RECORD" | cut -d' ' -f 1)
-    FILE=$(echo "$RECORD" | cut -d' ' -f 2-)
-
-#    echo "$RECORD"
-#    echo "  EVENT=$EVENT"
-#    echo "  FILE=$FILE"
-
-    if [ "$EVENT" == "CREATE,ISDIR" ]
+  for ((i = 0; i < ${#PIDS[@]}; i++))
+  do
+    if ps -p ${PIDS[$i]} > /dev/null
     then
-      echo "$(ts) Detected new directory: $FILE"
-    elif [ "$EVENT" == "CLOSE_WRITE,CLOSE" ]
-    then
-      echo "$(ts) Detected new file: $FILE"
-    elif [ "$EVENT" == "MOVED_TO" ]
-    then
-      echo "$(ts) Detected moved file: $FILE"
-    else
       continue
     fi
 
-    # Monster up as many events as possible, until we hit the either the settle duration, or the max wait threshold.
-    start_time=$(date +"%s")
+    echo "$(ts) Monitor for ${CONFIG_FILES[$i]} has died (PID ${PIDS[$i]}). Killing other monitors and exiting."
 
-    while true
-    do
-      if read -t $SETTLE_DURATION RECORD
-      then
-        end_time=$(date +"%s")
-
-        if [ $(($end_time-$start_time)) -gt $MAX_WAIT_TIME ]
-        then
-          echo "$(ts) Input directory didn't stabilize after $MAX_WAIT_TIME seconds. Notifying SageTV anyway."
-          break
-        fi
-      else
-        echo "$(ts) Input directory stabilized for $SETTLE_DURATION seconds. Notifying SageTV."
-        break
-      fi
+    for $PID in "${PIDS[@]}" 
+    do 
+      kill -9 $PID >/dev/null 2>&1
     done
 
-    $NOTIFY_COMMAND
-  fi
-done <$pipe
+    exit 2
+  done
+
+  sleep 60
+done

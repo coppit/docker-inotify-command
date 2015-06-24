@@ -14,10 +14,12 @@ RUN set -x \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-VOLUME ["/media", "/config"]
+VOLUME ["/config", \
+  "/watch1", "/watch2", "/watch3", "/watch4", "/watch5", "/watch6", "/watch7", "/watch8", "/watch9", "/watch10", \
+  "/watch11", "/watch12", "/watch13", "/watch14", "/watch15", "/watch16", "/watch17", "/watch18", "/watch19", "/watch20"]
 
 # Add default config file
-ADD sagetv-rescan.conf /root/sagetv-rescan.conf
+ADD sample.conf /root/sample.conf
 
 # Add scripts
 ADD start.sh /root/start.sh
