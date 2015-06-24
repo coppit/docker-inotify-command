@@ -95,7 +95,10 @@ function create_user {
 
   # We could be aliasing this new user to some existing user. Let's assume that's harmless.
   groupadd -o -g $GROUP_ID $GROUP
-  useradd -o -u $USER_ID -r -g $GROUP -s /sbin/nologin -c "Docker image user" $USER
+  useradd -o -u $USER_ID -r -g $GROUP -d /home/$USER -s /sbin/nologin -c "Docker image user" $USER
+
+  mkdir -p /home/$USER
+  chown -R $USER:$GROUP /home/$USER
 }
 
 #-----------------------------------------------------------------------------------------------------------------------
