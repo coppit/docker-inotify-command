@@ -12,6 +12,7 @@ function process_args {
   # These are intended to be global
   USER_ID=$1
   GROUP_ID=$2
+  UMASK=$3
 
   if [[ ! "$USER_ID" =~ ^[0-9]{1,}$ ]]
   then
@@ -22,6 +23,12 @@ function process_args {
   if [[ ! "$GROUP_ID" =~ ^[0-9]{1,}$ ]]
   then
     echo "Group ID value $GROUP_ID is not valid. It must be a whole number"
+    exit 1
+  fi
+
+  if [[ ! "$UMASK" =~ ^[0-7][0-7][0-7][0-7]$ ]]
+  then
+    echo "The umask value $UMASK is not valid. It must be an octal number such as 0022"
     exit 1
   fi
 }
@@ -56,9 +63,10 @@ function create_user {
 process_args "$@"
 
 # Shift off the args so that we can exec $@ below
-shift; shift
+shift; shift; shift
 
 create_user $USER_ID $GROUP_ID
 
 echo "$(ts) Running command as user \"$USER\"..."
+umask $UMASK
 exec /sbin/setuser $USER "$@"

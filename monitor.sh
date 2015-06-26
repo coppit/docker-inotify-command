@@ -220,7 +220,7 @@ do
     wait_for_minimum_period $last_run_time
 
     echo "$(ts) Running command with user ID $USER_ID and group ID $GROUP_ID"
-    /files/runas.sh $USER_ID $GROUP_ID $COMMAND &
+    /files/runas.sh $USER_ID $GROUP_ID $UMASK $COMMAND &
     PID=$!
     last_run_time=$(date +"%s")
 

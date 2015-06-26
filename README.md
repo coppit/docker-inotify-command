@@ -49,10 +49,13 @@ and "wheel" groups:
 
 `-e UMAP="nobody:99:100 www:80:800" -e GMAP="users:100 wheel:800"`
 
-For commands that create files without an explicit user or group name, you may want to set the `USER_ID` and `GROUP_ID`
-in the config file.  For example, if your command is `echo foo > /dir1/foo.txt`, then by default the file will be
-created as the "root" user of the container. If you want it to be created with the user ID and group ID of "nobody" in
-the host, you would set these config values to the output of `id -u nobody` and `id -g nobody` in the host.
+For commands that create files without an explicit user or group name, you may want to set the `USER_ID`, `GROUP_ID`,
+and `UMASK` in the config file.  For example, if your command is `echo foo > /dir1/foo.txt`, then by default the file
+will be created as the "root" user of the container. If you want it to be created with the user ID and group ID of
+"nobody" in the host, you would set these config values to the output of `id -u nobody` and `id -g nobody` in the host.
+
+Similarly, you may want to set the `UMASK` to match the host. As root you can run `su -l nobody -c umask` on the host to
+determine the umask for the "nobody" user. The `UMASK` config value must be specified in octal, such as 0022.
 
 Examples
 --------
@@ -67,6 +70,7 @@ This example is to run a permissions-repairing utility whenever there's a change
     # Need to run as root to have the authority to fix the permissions
     USER_ID=0
     GROUP_ID=0
+    UMASK=0000
     # This is important because chmod/chown will change files in the monitored directory
     IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING=1
 
@@ -86,6 +90,7 @@ This example tells SageTV to rescan its imported media when the media directory 
     # User and group don't really matter for the wget command. But we need to specify them in the config file.
     USER_ID=0
     GROUP_ID=0
+    UMASK=0000
     IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING=0
 
 We don't need to ignore events while the command is running because the wget command is a "fire and forget" asynchronous
