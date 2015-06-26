@@ -1,7 +1,5 @@
 #!/bin/bash
 
-GROUP=docker
-
 #-----------------------------------------------------------------------------------------------------------------------
 
 function ts {
@@ -11,28 +9,37 @@ function ts {
 #-----------------------------------------------------------------------------------------------------------------------
 
 function process_args {
-  local USER_UID_GID=$1
+  # These are intended to be global
+  USER_ID=$1
+  GROUP_ID=$2
 
-  if [[ ! "$USER_UID_GID" =~ ^[A-Za-z0-9._][-A-Za-z0-9._]*:[0-9]{1,}:[0-9]{1,}$ ]]
+  if [[ ! "$USER_ID" =~ ^[0-9]{1,}$ ]]
   then
-    echo "USER_UID_GID value $USER_UID_GID is not valid. It should be of the form <user>:<uid>:<gid>"
+    echo "User ID value $USER_ID is not valid. It must be a whole number"
     exit 1
   fi
 
-  # These are meant to be global.
-  USER=${USER_UID_GID%:*:*}
-  USER_ID=${USER_UID_GID#*:}
-  USER_ID=${USER_ID%:*}
-  GROUP_ID=${USER_UID_GID#*:*:}
+  if [[ ! "$GROUP_ID" =~ ^[0-9]{1,}$ ]]
+  then
+    echo "Group ID value $GROUP_ID is not valid. It must be a whole number"
+    exit 1
+  fi
 }
 
 #-----------------------------------------------------------------------------------------------------------------------
 
 function create_user {
-  local USER=$1
-  local USER_ID=$2
-  local GROUP=$3
-  local GROUP_ID=$4
+  local USER_ID=$1
+  local GROUP_ID=$2
+
+  USER="user_${USER_ID}_$GROUP_ID"
+  GROUP="group_${USER_ID}_$GROUP_ID"
+
+  if id -u $USER >/dev/null 2>&1
+  then
+    echo "$(ts) User \"$USER\" already exists. Skipping creation of user and group..."
+    return
+  fi
 
   echo "$(ts) Creating user \"$USER\" (ID $USER_ID) and group \"$GROUP\" (ID $GROUP_ID) to run the command..."
 
@@ -48,10 +55,10 @@ function create_user {
 
 process_args "$@"
 
-# Shift off the arg so that we can exec $@ below
-shift
+# Shift off the args so that we can exec $@ below
+shift; shift
 
-create_user $USER $USER_ID $GROUP $GROUP_ID
+create_user $USER_ID $GROUP_ID
 
 echo "$(ts) Running command as user \"$USER\"..."
 exec /sbin/setuser $USER "$@"

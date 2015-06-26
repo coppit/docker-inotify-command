@@ -219,11 +219,8 @@ do
     # Wait until it's okay to run the command again, monstering up events as we do so
     wait_for_minimum_period $last_run_time
 
-    # Generate a user from the MD5 of the config file
-    USER=$(md5sum $CONFIG_FILE | awk '{print $1}')
-
-    echo "$(ts) Running command"
-    /files/runas.sh $USER:$USER_ID:$GROUP_ID $COMMAND &
+    echo "$(ts) Running command with user ID $USER_ID and group ID $GROUP_ID"
+    /files/runas.sh $USER_ID $GROUP_ID $COMMAND &
     PID=$!
     last_run_time=$(date +"%s")
 
