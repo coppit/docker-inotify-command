@@ -80,6 +80,16 @@ function check_config {
     exit 1
   fi
 
+  if [[ ! "$USER_ID" =~ ^[0-9]{1,}$ ]]; then
+    echo "$(ts) USER_ID must be defined in $CONFIG_FILE as a whole number."
+    exit 1
+  fi
+
+  if [[ ! "$GROUP_ID" =~ ^[0-9]{1,}$ ]]; then
+    echo "$(ts) GROUP_ID must be defined in $CONFIG_FILE as a whole number."
+    exit 1
+  fi
+
   if [ -z "$COMMAND" ]; then
     echo "$(ts) COMMAND must be defined in $CONFIG_FILE"
     exit 1
@@ -209,8 +219,11 @@ do
     # Wait until it's okay to run the command again, monstering up events as we do so
     wait_for_minimum_period $last_run_time
 
+    # Generate a user from the MD5 of the config file
+    USER=$(md5sum $CONFIG_FILE | awk '{print $1}')
+
     echo "$(ts) Running command"
-    $COMMAND &
+    /files/runas.sh $USER:$USER_ID:$GROUP_ID $COMMAND &
     PID=$!
     last_run_time=$(date +"%s")
 

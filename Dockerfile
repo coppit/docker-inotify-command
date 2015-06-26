@@ -18,7 +18,6 @@ VOLUME ["/config", \
   "/dir1", "/dir2", "/dir3", "/dir4", "/dir5", "/dir6", "/dir7", "/dir8", "/dir9", "/dir10", \
   "/dir11", "/dir12", "/dir13", "/dir14", "/dir15", "/dir16", "/dir17", "/dir18", "/dir19", "/dir20"]
 
-ENV UGID 0:0
 ENV UMAP ""
 ENV GMAP ""
 
@@ -37,5 +36,7 @@ ADD monitor.sh /files/monitor.sh
 RUN chmod a+x /files/monitor.sh
 ADD runas.sh /files/runas.sh
 RUN chmod +x /files/runas.sh
+ADD mapids.sh /files/mapids.sh
+RUN chmod +x /files/mapids.sh
 
-CMD /files/runas.sh "$UMAP" "$GMAP" "$UGID" /files/start.sh
+CMD /files/mapids.sh "$UMAP" "$GMAP" && /files/start.sh
