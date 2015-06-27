@@ -13,42 +13,42 @@ function ts {
 
 function is_change_event {
   EVENT="$1"
-  FILE="$2"
+  INFO="$2"
 
   # File events
   if [ "$EVENT" == "ATTRIB" ]
   then
-    echo "$(ts) Detected file attribute change: $FILE"
+    echo "$(ts) Detected file attribute change: $INFO"
   elif [ "$EVENT" == "CLOSE_WRITE,CLOSE" ]
   then
     EVENT=CLOSE_WRITE
-    echo "$(ts) Detected new file: $FILE"
+    echo "$(ts) Detected new file: $INFO"
   elif [ "$EVENT" == "MOVED_TO" ]
   then
-    echo "$(ts) Detected file moved into dir: $FILE"
+    echo "$(ts) Detected file moved into dir: $INFO"
   elif [ "$EVENT" == "MOVED_FROM" ]
   then
-    echo "$(ts) Detected file moved out of dir: $FILE"
+    echo "$(ts) Detected file moved out of dir: $INFO"
   elif [ "$EVENT" == "DELETE" ]
   then
-    echo "$(ts) Detected deleted file: $FILE"
+    echo "$(ts) Detected deleted file: $INFO"
 
   # Directory events
   elif [ "$EVENT" == "ATTRIB,ISDIR" ]
   then
-    echo "$(ts) Detected dir attribute change: $FILE"
+    echo "$(ts) Detected dir attribute change: $INFO"
   elif [ "$EVENT" == "CREATE,ISDIR" ]
   then
-    echo "$(ts) Detected new dir: $FILE"
+    echo "$(ts) Detected new dir: $INFO"
   elif [ "$EVENT" == "MOVED_TO,IS_DIR" ]
   then
-    echo "$(ts) Detected dir moved into dir: $FILE"
+    echo "$(ts) Detected dir moved into dir: $INFO"
   elif [ "$EVENT" == "MOVED_FROM,IS_DIR" ]
   then
-    echo "$(ts) Detected dir moved out of dir: $FILE"
+    echo "$(ts) Detected dir moved out of dir: $INFO"
   elif [ "$EVENT" == "DELETE,ISDIR" ]
   then
-    echo "$(ts) Detected deleted dir: $FILE" 
+    echo "$(ts) Detected deleted dir: $INFO" 
 
   else
     return 1
@@ -194,7 +194,7 @@ pipe=$(mktemp -u)
 mkfifo $pipe
 
 echo "$(ts) Waiting for changes to $WATCH_DIR..."
-inotifywait -r -m -q --format '%e %f' $WATCH_DIR >$pipe &
+inotifywait -r -m -q --format 'EVENT=%e WATCHED=%w FILE=%f' $WATCH_DIR >$pipe &
 
 last_run_time=0
 
@@ -207,10 +207,10 @@ do
       echo "$(ts) [DEBUG] $RECORD"
     fi
 
-    EVENT=$(echo "$RECORD" | cut -d' ' -f 1)
-    FILE=$(echo "$RECORD" | cut -d' ' -f 2-)
+    EVENT=$(echo "$RECORD" | sed 's/EVENT=\([^ ]*\).*/\1/')
+    INFO=$(echo "$RECORD" | sed 's/EVENT=[^ ]* //')
 
-    if ! is_change_event "$EVENT" "$FILE"
+    if ! is_change_event "$EVENT" "$INFO"
     then
       continue
     fi
