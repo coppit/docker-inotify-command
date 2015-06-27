@@ -202,11 +202,13 @@ while true
 do
   if read RECORD
   then
+    if [[ "$DEBUG" == "1" ]]
+    then
+      echo "$(ts) [DEBUG] $RECORD"
+    fi
+
     EVENT=$(echo "$RECORD" | cut -d' ' -f 1)
     FILE=$(echo "$RECORD" | cut -d' ' -f 2-)
-
-#  echo "EVENT=$EVENT"
-#  echo "FILE=$FILE"
 
     if ! is_change_event "$EVENT" "$FILE"
     then
