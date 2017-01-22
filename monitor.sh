@@ -99,7 +99,7 @@ function check_config {
 #-----------------------------------------------------------------------------------------------------------------------
 
 function to_seconds {
-  readarray elements < <(echo $1 | sed 's/:/\n/g' | tac)
+  readarray elements < <(echo $1 | tr ':' '\n' | tac)
 
   SECONDS=0
   POWER=1
@@ -189,6 +189,18 @@ check_config
 SETTLE_DURATION=$(to_seconds $SETTLE_DURATION)
 MAX_WAIT_TIME=$(to_seconds $MAX_WAIT_TIME)
 MIN_PERIOD=$(to_seconds $MIN_PERIOD)
+
+echo "$(ts) CONFIGURATION:"
+echo "$(ts)       WATCH_DIR=$WATCH_DIR"
+echo "$(ts) SETTLE_DURATION=$SETTLE_DURATION"
+echo "$(ts)   MAX_WAIT_TIME=$MAX_WAIT_TIME"
+echo "$(ts)      MIN_PERIOD=$MIN_PERIOD"
+echo "$(ts)         COMMAND=$COMMAND"
+echo "$(ts)         USER_ID=$USER_ID"
+echo "$(ts)        GROUP_ID=$GROUP_ID"
+echo "$(ts)           UMASK=$UMASK"
+echo "$(ts)           DEBUG=$DEBUG"
+echo "$(ts) IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING=$IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING"
 
 pipe=$(mktemp -u)
 mkfifo $pipe
