@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function ts {
-  echo [`date '+%b %d %X'`] MASTER:
+  echo [`date '+%Y-%m-%d %H:%M:%S'`] MASTER:
 }
 
 echo "$(ts) Starting master controller"
