@@ -27,7 +27,7 @@ PIDS=()
 for CONFIG_FILE in "${CONFIG_FILES[@]}" 
 do 
   echo "$(ts) Launching monitor for $CONFIG_FILE"
-  /files/monitor.sh $CONFIG_FILE &
+  /files/monitor.py $CONFIG_FILE &
   PIDS+=($!)
 done
 

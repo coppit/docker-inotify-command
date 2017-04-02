@@ -10,7 +10,7 @@ RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup \
 
 RUN set -x \
   && apt-get update \
-  && apt-get install -y inotify-tools wget \
+  && apt-get install -y python3-watchdog wget \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -29,11 +29,11 @@ RUN chmod a+rwX /files
 ADD sample.conf /files/sample.conf
 RUN chmod a+r /files/sample.conf
 
-# Add scripts. Make sure start.sh and monitor.sh are executable by $UID
+# Add scripts. Make sure start.sh and monitor.py are executable by $UID
 ADD start.sh /files/
 RUN chmod a+x /files/start.sh
-ADD monitor.sh /files/
-RUN chmod a+x /files/monitor.sh
+ADD monitor.py /files/
+RUN chmod a+x /files/monitor.py
 ADD runas.sh /files/
 RUN chmod +x /files/runas.sh
 ADD mapids.sh /files/
