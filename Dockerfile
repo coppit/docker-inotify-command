@@ -30,13 +30,13 @@ ADD sample.conf /files/sample.conf
 RUN chmod a+r /files/sample.conf
 
 # Add scripts. Make sure start.sh and monitor.sh are executable by $UID
-ADD start.sh /files/start.sh
+ADD start.sh /files/
 RUN chmod a+x /files/start.sh
-ADD monitor.sh /files/monitor.sh
+ADD monitor.sh /files/
 RUN chmod a+x /files/monitor.sh
-ADD runas.sh /files/runas.sh
+ADD runas.sh /files/
 RUN chmod +x /files/runas.sh
-ADD mapids.sh /files/mapids.sh
+ADD mapids.sh /files/
 RUN chmod +x /files/mapids.sh
 
 CMD /files/mapids.sh "$UMAP" "$GMAP" && /files/start.sh
