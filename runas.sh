@@ -69,4 +69,4 @@ create_user $USER_ID $GROUP_ID
 
 echo "$(ts) Running command as user \"$USER\"..."
 umask $UMASK
-exec /sbin/setuser $USER "$@"
+eval exec /sbin/setuser $USER "$@"
