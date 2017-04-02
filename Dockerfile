@@ -39,4 +39,10 @@ RUN chmod +x /files/runas.sh
 ADD mapids.sh /files/
 RUN chmod +x /files/mapids.sh
 
+# Set the locale, to help Python and the user's applications deal with files that have non-ASCII characters
+RUN locale-gen en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
 CMD /files/mapids.sh "$UMAP" "$GMAP" && /files/start.sh
