@@ -44,15 +44,22 @@ def to_seconds(timestr):
 def read_config(config_file):
     config_file = remove_linefeeds(config_file)
 
-    # Shenanigans to read bash format config file. I didn't want to ask them to change their config files.
-    source_command = 'source {}'.format(config_file)
+    # Shenanigans to read docker env vars, and the bash format config file. I didn't want to ask them to change their
+    # config files.
     dump_command = '/usr/bin/python3 -c "import os, json;print(json.dumps(dict(os.environ)))"'
 
+    pipe = subprocess.Popen(['/bin/bash', '-c', dump_command], stdout=subprocess.PIPE)
+    string = pipe.stdout.read().decode('ascii')
+    base_env = json.loads(string)
+
+    source_command = 'source {}'.format(config_file)
     pipe = subprocess.Popen(['/bin/bash', '-c', 'set -a && {} && {}'.format(source_command,dump_command)],
         stdout=subprocess.PIPE)
-
     string = pipe.stdout.read().decode('ascii')
-    env = json.loads(string)
+    config_env = json.loads(string)
+
+    env = config_env.copy()
+    env.update(base_env)
 
     class Args:
         pass
