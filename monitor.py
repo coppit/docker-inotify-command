@@ -59,17 +59,21 @@ def read_config(config_file):
 
     args = Args()
 
+    if "WATCH_DIR" not in env:
+        logging.error("Configuration error. WATCH_DIR must be defined.")
+        sys.exit(1)
+
     if not os.path.isdir(env["WATCH_DIR"]):
         logging.error("Configuration error. WATCH_DIR must be a directory.")
         sys.exit(1)
     args.watch_dir = env["WATCH_DIR"]
 
-    if not re.match("([0-9]{1,2}:){0,2}[0-9]{1,2}", env["SETTLE_DURATION"]):
+    if "SETTLE_DURATION" not in env or not re.match("([0-9]{1,2}:){0,2}[0-9]{1,2}", env["SETTLE_DURATION"]):
         logging.error("Configuration error. SETTLE_DURATION must be defined as HH:MM:SS or MM:SS or SS.")
         sys.exit(1)
     args.settle_duration = to_seconds(env["SETTLE_DURATION"])
 
-    if not re.match("([0-9]{1,2}:){0,2}[0-9]{1,2}", env["MAX_WAIT_TIME"]):
+    if "MAX_WAIT_TIME" not in env or not re.match("([0-9]{1,2}:){0,2}[0-9]{1,2}", env["MAX_WAIT_TIME"]):
         logging.error("Configuration error. MAX_WAIT_TIME must be defined as HH:MM:SS or MM:SS or SS.")
         sys.exit(1)
     args.max_wait_time = to_seconds(env["MAX_WAIT_TIME"])
@@ -78,27 +82,27 @@ def read_config(config_file):
         logging.error("Configuration error. SETTLE_DURATION cannot be greater than MAX_WAIT_TIME.")
         sys.exit(1)
 
-    if not re.match("([0-9]{1,2}:){0,2}[0-9]{1,2}", env["MIN_PERIOD"]):
+    if "MIN_PERIOD" not in env or not re.match("([0-9]{1,2}:){0,2}[0-9]{1,2}", env["MIN_PERIOD"]):
         logging.error("Configuration error. MIN_PERIOD must be defined as HH:MM:SS or MM:SS or SS.")
         sys.exit(1)
     args.min_period = to_seconds(env["MIN_PERIOD"])
 
-    if not re.match("[0-9]{1,}", env["USER_ID"]):
+    if "USER_ID" not in env or not re.match("[0-9]{1,}", env["USER_ID"]):
         logging.error("Configuration error. USER_ID must be a whole number.")
         sys.exit(1)
     args.user_id = env["USER_ID"]
 
-    if not re.match("[0-9]{1,}", env["GROUP_ID"]):
+    if "GROUP_ID" not in env or not re.match("[0-9]{1,}", env["GROUP_ID"]):
         logging.error("Configuration error. GROUP_ID must be a whole number.")
         sys.exit(1)
     args.group_id = env["GROUP_ID"]
 
-    if not env["COMMAND"]:
+    if "COMMAND" not in env:
         logging.error("Configuration error. COMMAND must be defined.")
         sys.exit(1)
     args.command = env["COMMAND"]
 
-    if not re.match("0[0-7]{3}", env["UMASK"]):
+    if "UMASK" not in env or not re.match("0[0-7]{3}", env["UMASK"]):
         logging.error("Configuration error. UMASK must be defined as an octal 0### number.")
         sys.exit(1)
     args.umask = env["UMASK"]
@@ -108,7 +112,7 @@ def read_config(config_file):
         sys.exit(1)
     args.debug = "DEBUG" in env and env["DEBUG"] == "1"
 
-    if not re.match("[01]", env["IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING"]):
+    if "IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING" not in env or not re.match("[01]", env["IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING"]):
         logging.error("Configuration error. IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING must be defined as 0 or 1.")
         sys.exit(1)
     args.ignore_events_while_command_is_running = env["IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING"] == "1"
