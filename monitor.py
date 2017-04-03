@@ -183,11 +183,11 @@ def run_command(args, event_handler):
     logging.info("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
 
     event_handler.enable_monitoring(not args.ignore_events_while_command_is_running)
-    process = subprocess.run([RUNAS, args.user_id, args.group_id, args.umask, args.command])
+    returncode = subprocess.call([RUNAS, args.user_id, args.group_id, args.umask, args.command])
     event_handler.enable_monitoring(True)
 
     logging.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-    logging.info("Finished running command. Exit code was %i", process.returncode)
+    logging.info("Finished running command. Exit code was %i", returncode)
 
 #-----------------------------------------------------------------------------------------------------------------------
 
