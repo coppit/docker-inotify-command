@@ -8,11 +8,7 @@ function ts {
 
 #-----------------------------------------------------------------------------------------------------------------------
 
-function process_args {
-  # These are meant to be globals.
-  UMAP=$1
-  GMAP=$2
-
+function check_env_vars {
   for NAME_UID_GID in $UMAP
   do
     if [[ ! "$NAME_UID_GID" =~ ^[A-Za-z0-9._][-A-Za-z0-9._]*:[0-9]{1,}:[0-9]{1,}$ ]]
@@ -74,7 +70,12 @@ function update_groups {
 
 #-----------------------------------------------------------------------------------------------------------------------
 
-process_args "$@"
+# Uses UMAP and GMAP
+check_env_vars "$@"
 
 update_users "$UMAP"
 update_groups "$GMAP"
+
+chmod a+r /files/sample.conf
+chmod a+x /files/monitor.py
+chmod +x /files/runas.sh
