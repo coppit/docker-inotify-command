@@ -42,9 +42,37 @@ function create_user {
   USER="user_${USER_ID}_$GROUP_ID"
   GROUP="group_${USER_ID}_$GROUP_ID"
 
+  if grep -q '^[^:]*:[^:]*:99:100:' /etc/passwd >/dev/null 2>&1
+  then
+    USER=$(grep '^[^:]*:[^:]*:99:100:' /etc/passwd | sed 's/:.*//')
+
+    if [[ $USER == *$'\n'* ]]
+    then
+      echo "$(ts) ERROR: Found multiple users with the proper user ID and group ID. Exiting..."
+      exit 1
+    fi
+
+    echo "$(ts) Found existing user \"$USER\" with the proper user ID and group ID. Skipping creation of user and group..."
+    return
+  fi
+
+  if grep -q '^[^:]*:[^:]*:99:' /etc/passwd >/dev/null 2>&1
+  then
+    USER=$(grep '^[^:]*:[^:]*:99:100:' /etc/passwd | sed 's/:.*//')
+
+    if [[ $USER == *$'\n'* ]]
+    then
+      echo "$(ts) ERROR: Found multiple users with the proper user ID and incorrect group ID. Refusing to modify the group ID. Exiting..."
+    else
+      echo "$(ts) ERROR: Found user \"$USER\" with the proper user ID but incorrect group ID. Refusing to modify the group ID. Exiting..."
+    fi
+
+    exit 1
+  fi
+
   if id -u $USER >/dev/null 2>&1
   then
-    echo "$(ts) User \"$USER\" already exists. Skipping creation of user and group..."
+    echo "$(ts) User \"$USER\" already exists. Skipping creation of new user and group..."
     return
   fi
 
