@@ -42,9 +42,9 @@ function create_user {
   USER="user_${USER_ID}_$GROUP_ID"
   GROUP="group_${USER_ID}_$GROUP_ID"
 
-  if grep -q '^[^:]*:[^:]*:99:100:' /etc/passwd >/dev/null 2>&1
+  if grep -q "^[^:]*:[^:]*:$USER_ID:$GROUP_ID:" /etc/passwd >/dev/null 2>&1
   then
-    USER=$(grep '^[^:]*:[^:]*:99:100:' /etc/passwd | sed 's/:.*//')
+    USER=$(grep "^[^:]*:[^:]*:$USER_ID:$GROUP_ID:" /etc/passwd | sed 's/:.*//')
 
     if [[ $USER == *$'\n'* ]]
     then
@@ -56,9 +56,9 @@ function create_user {
     return
   fi
 
-  if grep -q '^[^:]*:[^:]*:99:' /etc/passwd >/dev/null 2>&1
+  if grep -q "^[^:]*:[^:]*:$USER_ID:" /etc/passwd >/dev/null 2>&1
   then
-    USER=$(grep '^[^:]*:[^:]*:99:100:' /etc/passwd | sed 's/:.*//')
+    USER=$(grep "^[^:]*:[^:]*:$USER_ID:" /etc/passwd | sed 's/:.*//')
 
     if [[ $USER == *$'\n'* ]]
     then
