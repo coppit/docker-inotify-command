@@ -56,6 +56,7 @@ This example is to run a permissions-repairing utility whenever there's a change
     UMASK=0000
     # This is important because chmod/chown will change files in the monitored directory
     IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING=1
+    USE_POLLING=no
 
 Since the `newperms` utility does an explicit "chown -R nobody:users", we need to use the UMAP and GMAP environment variables to update the user and group in the container so that it will match the host. For example:
 
@@ -73,5 +74,6 @@ This example tells SageTV to rescan its imported media when the media directory 
     GROUP_ID=0
     UMASK=0000
     IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING=0
+    USE_POLLING=no
 
 We don't need to ignore events while the command is running because the wget command is a "fire and forget" asynchronous operation. We also don't need to use UMAP or GMAP.

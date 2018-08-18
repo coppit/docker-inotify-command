@@ -10,6 +10,7 @@ import sys
 import tempfile
 import time
 from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserver
 from watchdog.events import FileSystemEventHandler
 
 RUNAS = "/files/runas.sh"
@@ -124,6 +125,15 @@ def read_config(config_file):
         sys.exit(1)
     args.ignore_events_while_command_is_running = env["IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING"] == "1"
 
+    if "USE_POLLING" in env:
+        if not re.match("(yes|no|true|false|0|1)", env["USE_POLLING"], re.IGNORECASE):
+            logging.error("Configuration error. USE_POLLING must be \"yes\" or \"no\".")
+            sys.exit(1)
+
+        args.use_polling = True if re.match("(yes|true|1)", env["USE_POLLING"], re.IGNORECASE) else False
+    else:
+        args.use_polling = False
+
     logging.info("CONFIGURATION:")
     logging.info("      WATCH_DIR=%s", args.watch_dir)
     logging.info("SETTLE_DURATION=%s", args.settle_duration)
@@ -134,6 +144,7 @@ def read_config(config_file):
     logging.info("       GROUP_ID=%s", args.group_id)
     logging.info("          UMASK=%s", args.umask)
     logging.info("          DEBUG=%s", args.debug)
+    logging.info("    USE_POLLING=%s", args.use_polling)
     logging.info("IGNORE_EVENTS_WHILE_COMMAND_IS_RUNNING=%s", args.ignore_events_while_command_is_running)
 
     return args
@@ -258,8 +269,14 @@ if args.debug:
 logging.info("Starting monitor for %s", name)
 
 # Launch the watchdog
+if args.use_polling:
+    logging.info("Using polling to detect changes")
+    observer = PollingObserver()
+else:
+    logging.info("Using native change detection to detect changes")
+    observer = Observer()
+
 event_handler = ModifyHandler()
-observer = Observer()
 observer.schedule(event_handler, args.watch_dir, recursive=True)
 observer.start()
 
