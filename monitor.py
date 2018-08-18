@@ -46,7 +46,7 @@ def read_config(config_file):
 
     # Shenanigans to read docker env vars, and the bash format config file. I didn't want to ask them to change their
     # config files.
-    dump_command = '/usr/bin/python3 -c "import os, json;print(json.dumps(dict(os.environ)))"'
+    dump_command = '{} -c "import os, json;print(json.dumps(dict(os.environ)))"'.format(sys.executable)
 
     pipe = subprocess.Popen(['/bin/bash', '-c', dump_command], stdout=subprocess.PIPE)
     string = pipe.stdout.read().decode('ascii')
